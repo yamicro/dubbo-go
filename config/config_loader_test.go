@@ -18,6 +18,8 @@
 package config
 
 import (
+	"dubbo.apache.org/dubbo-go/v3/config/application"
+	"dubbo.apache.org/dubbo-go/v3/config/root"
 	"path/filepath"
 	"sort"
 	"sync"
@@ -195,22 +197,22 @@ func TestWithNoRegLoad(t *testing.T) {
 
 func TestSetDefaultValue(t *testing.T) {
 	proConfig := &ProviderConfig{Registries: make(map[string]*RegistryConfig), Protocols: make(map[string]*ProtocolConfig)}
-	assert.Nil(t, proConfig.ApplicationConfig)
+	assert.Nil(t, proConfig.Application)
 	setDefaultValue(proConfig)
 	assert.Equal(t, proConfig.Registries["demoZK"].Address, "127.0.0.1:2181")
 	assert.Equal(t, proConfig.Registries["demoZK"].TimeoutStr, "3s")
 	assert.Equal(t, proConfig.Registries["demoZK"].Protocol, "zookeeper")
 	assert.Equal(t, proConfig.Protocols["dubbo"].Name, "dubbo")
 	assert.Equal(t, proConfig.Protocols["dubbo"].Port, "20000")
-	assert.NotNil(t, proConfig.ApplicationConfig)
+	assert.NotNil(t, proConfig.Application)
 
 	conConfig := &ConsumerConfig{Registries: make(map[string]*RegistryConfig)}
-	assert.Nil(t, conConfig.ApplicationConfig)
+	assert.Nil(t, conConfig.Application)
 	setDefaultValue(conConfig)
 	assert.Equal(t, conConfig.Registries["demoZK"].Address, "127.0.0.1:2181")
 	assert.Equal(t, conConfig.Registries["demoZK"].TimeoutStr, "3s")
 	assert.Equal(t, conConfig.Registries["demoZK"].Protocol, "zookeeper")
-	assert.NotNil(t, conConfig.ApplicationConfig)
+	assert.NotNil(t, conConfig.Application)
 
 }
 func TestConfigLoaderWithConfigCenter(t *testing.T) {
@@ -242,7 +244,7 @@ func TestConfigLoaderWithConfigCenter(t *testing.T) {
 	assert.NotNil(t, providerConfig)
 	assert.NotEqual(t, ProviderConfig{}, GetProviderConfig())
 
-	assert.Equal(t, "BDTService", consumerConfig.ApplicationConfig.Name)
+	assert.Equal(t, "BDTService", consumerConfig.Application.Name)
 	assert.Equal(t, "127.0.0.1:2181", consumerConfig.Registries["hangzhouzk"].Address)
 }
 
@@ -284,13 +286,13 @@ func TestConfigLoaderWithConfigCenterSingleRegistry(t *testing.T) {
 
 	err = ConsumerInit(conPath)
 	assert.NoError(t, err)
-	checkApplicationName(consumerConfig.ApplicationConfig)
+	checkApplicationName(consumerConfig.Application)
 	err = configCenterRefreshConsumer()
 	checkRegistries(consumerConfig.Registries, consumerConfig.Registry)
 	assert.NoError(t, err)
 	err = ProviderInit(proPath)
 	assert.NoError(t, err)
-	checkApplicationName(providerConfig.ApplicationConfig)
+	checkApplicationName(providerConfig.Application)
 	err = configCenterRefreshProvider()
 	checkRegistries(providerConfig.Registries, providerConfig.Registry)
 	assert.NoError(t, err)
@@ -300,7 +302,7 @@ func TestConfigLoaderWithConfigCenterSingleRegistry(t *testing.T) {
 	assert.NotNil(t, providerConfig)
 	assert.NotEqual(t, ProviderConfig{}, GetProviderConfig())
 
-	assert.Equal(t, "BDTService", consumerConfig.ApplicationConfig.Name)
+	assert.Equal(t, "BDTService", consumerConfig.Application.Name)
 	assert.Equal(t, "mock://127.0.0.1:2182", consumerConfig.Registries[constant.DEFAULT_KEY].Address)
 }
 
@@ -314,8 +316,8 @@ func TestGetBaseConfig(t *testing.T) {
 // mockInitProviderWithSingleRegistry will init a mocked providerConfig
 func mockInitProviderWithSingleRegistry() {
 	providerConfig = &ProviderConfig{
-		BaseConfig: BaseConfig{
-			ApplicationConfig: &ApplicationConfig{
+		Config: root.Config{
+			Application: &application.Config{
 				Organization: "dubbo_org",
 				Name:         "dubbo",
 				Module:       "module",

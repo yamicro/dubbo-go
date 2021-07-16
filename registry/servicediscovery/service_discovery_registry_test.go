@@ -18,6 +18,7 @@
 package servicediscovery
 
 import (
+	"dubbo.apache.org/dubbo-go/v3/config/service/discovery"
 	"testing"
 )
 
@@ -64,7 +65,7 @@ func TestServiceDiscoveryRegistry_Register(t *testing.T) {
 	})
 	extension.SetAndInitGlobalDispatcher("mock")
 
-	config.GetBaseConfig().ServiceDiscoveries["mock"] = &config.ServiceDiscoveryConfig{
+	config.GetBaseConfig().ServiceDiscoveries["mock"] = &discovery.Config{
 		Protocol: "mock",
 	}
 	registryURL, _ := common.NewURL("service-discovery://localhost:12345",

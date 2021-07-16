@@ -17,6 +17,7 @@
 package apollo
 
 import (
+	"dubbo.apache.org/dubbo-go/v3/config/root"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -184,7 +185,7 @@ func TestGetConfigItem(t *testing.T) {
 }
 
 func initMockApollo(t *testing.T) *apolloConfiguration {
-	c := &config.BaseConfig{ConfigCenterConfig: &config.ConfigCenterConfig{
+	c := &root.Config{ConfigCenterConfig: &config.ConfigCenterConfig{
 		Protocol:  "apollo",
 		Address:   "106.12.25.204:8080",
 		AppId:     "testApplication_yang",

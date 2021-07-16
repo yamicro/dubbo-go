@@ -18,6 +18,8 @@
 package config
 
 import (
+	"dubbo.apache.org/dubbo-go/v3/config/application"
+	"dubbo.apache.org/dubbo-go/v3/config/root"
 	"time"
 )
 
@@ -177,7 +179,7 @@ type ConsumerConfigOpt func(config *ConsumerConfig) *ConsumerConfig
 func NewDefaultConsumerConfig() *ConsumerConfig {
 	check := true
 	newConsumerConfig := &ConsumerConfig{
-		BaseConfig:     BaseConfig{},
+		Config:         root.Config{},
 		Registries:     make(map[string]*RegistryConfig, 8),
 		References:     make(map[string]*ReferenceConfig, 8),
 		ConnectTimeout: 3 * time.Second,
@@ -197,9 +199,9 @@ func NewConsumerConfig(opts ...ConsumerConfigOpt) *ConsumerConfig {
 }
 
 // WithConsumerAppConfig returns ConsumerConfigOpt with given @appConfig
-func WithConsumerAppConfig(appConfig *ApplicationConfig) ConsumerConfigOpt {
+func WithConsumerAppConfig(appConfig *application.Config) ConsumerConfigOpt {
 	return func(config *ConsumerConfig) *ConsumerConfig {
-		config.ApplicationConfig = appConfig
+		config.Config.Application = appConfig
 		return config
 	}
 }
@@ -321,11 +323,11 @@ func WithReferenceMethod(methodName, retries, lb string) ReferenceConfigOpt {
 // ProviderConfigOpt is the
 type ProviderConfigOpt func(config *ProviderConfig) *ProviderConfig
 
-// NewDefaultProviderConfig returns ProviderConfig with default ApplicationConfig
+// NewDefaultProviderConfig returns ProviderConfig with default application.Config
 func NewDefaultProviderConfig() *ProviderConfig {
 	newConsumerConfig := &ProviderConfig{
-		BaseConfig: BaseConfig{
-			ApplicationConfig: &ApplicationConfig{
+		Config: root.Config{
+			Application: &application.Config{
 				Name:         "dubbo",
 				Module:       "module",
 				Organization: "dubbo_org",
@@ -357,9 +359,9 @@ func WithProviderRegistryConfig(regConfig *RegistryConfig) ProviderConfigOpt {
 }
 
 // WithProviderAppConfig returns ProviderConfigOpt with given @appConfig
-func WithProviderAppConfig(appConfig *ApplicationConfig) ProviderConfigOpt {
+func WithProviderAppConfig(appConfig *application.Config) ProviderConfigOpt {
 	return func(config *ProviderConfig) *ProviderConfig {
-		config.ApplicationConfig = appConfig
+		config.Config.Application = appConfig
 		return config
 	}
 }
@@ -474,18 +476,18 @@ func WithServiceMethod(name, retries, lb string) ServiceConfigOpt {
 }
 
 ///////////////////////////////////////// Application config api
-// ApplicationConfigOpt is option to init ApplicationConfig
-type ApplicationConfigOpt func(config *ApplicationConfig) *ApplicationConfig
+// ApplicationConfigOpt is option to init application.Config
+type ApplicationConfigOpt func(config *application.Config) *application.Config
 
-// NewDefaultApplicationConfig returns ApplicationConfig with default
+// NewDefaultApplicationConfig returns application.Config with default
 // name: dubbo.io
 // module: sample
 // organization: dubbo.io
 // owner: dubbogo
 // version: 0.0.1
 // environment dev
-func NewDefaultApplicationConfig() *ApplicationConfig {
-	newAppConfig := &ApplicationConfig{
+func NewDefaultApplicationConfig() *application.Config {
+	newAppConfig := &application.Config{
 		Name:         "dubbo.io",
 		Module:       "sample",
 		Organization: "dubbo.io",
@@ -497,8 +499,8 @@ func NewDefaultApplicationConfig() *ApplicationConfig {
 }
 
 // NewApplicationConfig is named as api, because there is NewServiceConfig func already declared
-// NewApplicationConfig returns ApplicationConfig with default application config
-func NewApplicationConfig(opts ...ApplicationConfigOpt) *ApplicationConfig {
+// NewApplicationConfig returns application.Config with default application config
+func NewApplicationConfig(opts ...ApplicationConfigOpt) *application.Config {
 	defaultServiceConfig := NewDefaultApplicationConfig()
 	for _, v := range opts {
 		v(defaultServiceConfig)
@@ -508,7 +510,7 @@ func NewApplicationConfig(opts ...ApplicationConfigOpt) *ApplicationConfig {
 
 // WithAppName returns ApplicationConfigOpt with given @name
 func WithAppName(name string) ApplicationConfigOpt {
-	return func(config *ApplicationConfig) *ApplicationConfig {
+	return func(config *application.Config) *application.Config {
 		config.Name = name
 		return config
 	}
@@ -516,7 +518,7 @@ func WithAppName(name string) ApplicationConfigOpt {
 
 // WithAppModule returns ApplicationConfigOpt with given @module
 func WithAppModule(module string) ApplicationConfigOpt {
-	return func(config *ApplicationConfig) *ApplicationConfig {
+	return func(config *application.Config) *application.Config {
 		config.Module = module
 		return config
 	}
@@ -524,7 +526,7 @@ func WithAppModule(module string) ApplicationConfigOpt {
 
 // WithAppOrganization returns ApplicationConfigOpt wight given organization @org
 func WithAppOrganization(org string) ApplicationConfigOpt {
-	return func(config *ApplicationConfig) *ApplicationConfig {
+	return func(config *application.Config) *application.Config {
 		config.Organization = org
 		return config
 	}
@@ -532,7 +534,7 @@ func WithAppOrganization(org string) ApplicationConfigOpt {
 
 // WithAppOwner returns ApplicationConfigOpt with given @owner
 func WithAppOwner(owner string) ApplicationConfigOpt {
-	return func(config *ApplicationConfig) *ApplicationConfig {
+	return func(config *application.Config) *application.Config {
 		config.Owner = owner
 		return config
 	}
@@ -540,7 +542,7 @@ func WithAppOwner(owner string) ApplicationConfigOpt {
 
 // WithAppVersion returns ApplicationConfigOpt with given version @version
 func WithAppVersion(version string) ApplicationConfigOpt {
-	return func(config *ApplicationConfig) *ApplicationConfig {
+	return func(config *application.Config) *application.Config {
 		config.Version = version
 		return config
 	}
@@ -548,7 +550,7 @@ func WithAppVersion(version string) ApplicationConfigOpt {
 
 // WithAppEnvironment returns ApplicationConfigOpt with given environment @env
 func WithAppEnvironment(env string) ApplicationConfigOpt {
-	return func(config *ApplicationConfig) *ApplicationConfig {
+	return func(config *application.Config) *application.Config {
 		config.Environment = env
 		return config
 	}

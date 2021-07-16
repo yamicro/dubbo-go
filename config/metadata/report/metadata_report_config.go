@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-package config
+package report
 
 import (
+	"dubbo.apache.org/dubbo-go/v3/config"
 	"net/url"
 )
 
@@ -32,25 +33,25 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/config/instance"
 )
 
-// MethodConfig is method level configuration
-type MetadataReportConfig struct {
-	Protocol  string            `required:"true"  yaml:"protocol"  json:"protocol,omitempty" property:"protocol"`
+// Config is method level configuration
+type Config struct {
+	Protocol  string            `default:"metadata" validate:"required" yaml:"protocol"  json:"protocol,omitempty" property:"protocol"`
 	RemoteRef string            `required:"true"  yaml:"remote_ref"  json:"remote_ref,omitempty" property:"remote_ref"`
 	Params    map[string]string `yaml:"params" json:"params,omitempty" property:"params"`
 	Group     string            `yaml:"group" json:"group,omitempty" property:"group"`
 }
 
-// nolint
-func (c *MetadataReportConfig) Prefix() string {
+// Prefix dubbo.metadata-report
+func (Config) Prefix() string {
 	return constant.MetadataReportPrefix
 }
 
 // UnmarshalYAML unmarshal the MetadataReportConfig by @unmarshal function
-func (c *MetadataReportConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if err := defaults.Set(c); err != nil {
 		return perrors.WithStack(err)
 	}
-	type plain MetadataReportConfig
+	type plain Config
 	if err := unmarshal((*plain)(c)); err != nil {
 		return perrors.WithStack(err)
 	}
@@ -58,7 +59,7 @@ func (c *MetadataReportConfig) UnmarshalYAML(unmarshal func(interface{}) error) 
 }
 
 // nolint
-func (c *MetadataReportConfig) ToUrl() (*common.URL, error) {
+func (c *Config) ToUrl() (*common.URL, error) {
 	urlMap := make(url.Values)
 
 	if c.Params != nil {
@@ -67,7 +68,7 @@ func (c *MetadataReportConfig) ToUrl() (*common.URL, error) {
 		}
 	}
 
-	rc, ok := GetBaseConfig().GetRemoteConfig(c.RemoteRef)
+	rc, ok := config.GetBaseConfig().GetRemoteConfig(c.RemoteRef)
 
 	if !ok {
 		return nil, perrors.New("Could not find out the remote ref config, name: " + c.RemoteRef)
@@ -81,18 +82,18 @@ func (c *MetadataReportConfig) ToUrl() (*common.URL, error) {
 		common.WithProtocol(c.Protocol),
 	)
 	if err != nil || len(res.Protocol) == 0 {
-		return nil, perrors.New("Invalid MetadataReportConfig.")
+		return nil, perrors.New("Invalid MetadataReport.")
 	}
 	res.SetParam("metadata", res.Protocol)
 	return res, nil
 }
 
-func (c *MetadataReportConfig) IsValid() bool {
+func (c *Config) IsValid() bool {
 	return len(c.Protocol) != 0
 }
 
 // StartMetadataReport: The entry of metadata report start
-func startMetadataReport(metadataType string, metadataReportConfig *MetadataReportConfig) error {
+func startMetadataReport(metadataType string, metadataReportConfig *Config) error {
 	if metadataReportConfig == nil || !metadataReportConfig.IsValid() {
 		return nil
 	}

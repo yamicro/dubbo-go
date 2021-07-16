@@ -14,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package config
+package root
 
 import (
+	config2 "dubbo.apache.org/dubbo-go/v3/config"
+	"dubbo.apache.org/dubbo-go/v3/config/application"
 	"reflect"
 	"testing"
 )
@@ -40,7 +42,7 @@ func getMockMap() map[string]string {
 	return baseMockMap
 }
 
-var baseAppConfig = &ApplicationConfig{
+var baseAppConfig = &application.Config{
 	Organization: "dubbo_org",
 	Name:         "dubbo",
 	Module:       "module",
@@ -49,7 +51,7 @@ var baseAppConfig = &ApplicationConfig{
 	Environment:  "test",
 }
 
-var baseRegistries = map[string]*RegistryConfig{
+var baseRegistries = map[string]*config2.RegistryConfig{
 	"shanghai_reg2": {
 		Protocol:   "mock",
 		TimeoutStr: "2s",
@@ -76,7 +78,7 @@ var baseRegistries = map[string]*RegistryConfig{
 	},
 }
 
-var baseMockRef = map[string]*ReferenceConfig{
+var baseMockRef = map[string]*config2.ReferenceConfig{
 	"MockService": {
 		InterfaceName: "com.MockService",
 		Protocol:      "mock",
@@ -85,7 +87,7 @@ var baseMockRef = map[string]*ReferenceConfig{
 		Retries:       "3",
 		Group:         "huadong_idc",
 		Version:       "1.0.0",
-		Methods: []*MethodConfig{
+		Methods: []*config2.MethodConfig{
 			{
 				InterfaceId:   "MockService",
 				InterfaceName: "com.MockService",
@@ -105,7 +107,7 @@ var baseMockRef = map[string]*ReferenceConfig{
 }
 
 func TestRefresh(t *testing.T) {
-	c := &BaseConfig{}
+	c := &Config{}
 	c.fileStream = nil
 	mockMap := getMockMap()
 	mockMap["dubbo.shutdown.timeout"] = "12s"
@@ -113,14 +115,14 @@ func TestRefresh(t *testing.T) {
 	config.GetEnvInstance().UpdateExternalConfigMap(mockMap)
 	config.GetEnvInstance().UpdateAppExternalConfigMap(map[string]string{})
 
-	father := &ConsumerConfig{
+	father := &config2.ConsumerConfig{
 		Check: &[]bool{true}[0],
-		BaseConfig: BaseConfig{
-			ApplicationConfig: baseAppConfig,
+		Config: Config{
+			Application: baseAppConfig,
 		},
 		Registries: baseRegistries,
 		References: baseMockRef,
-		ShutdownConfig: &ShutdownConfig{
+		ShutdownConfig: &config2.ShutdownConfig{
 			Timeout:              "12s",
 			StepTimeout:          "2s",
 			RejectRequestHandler: "mock",
@@ -130,17 +132,17 @@ func TestRefresh(t *testing.T) {
 	}
 
 	c.SetFatherConfig(father)
-	c.fresh()
+	//c.fresh()
 	assert.Equal(t, "mock100", father.Registries["shanghai_reg1"].Protocol)
 	assert.Equal(t, "10", father.References["MockService"].Retries)
 
 	assert.Equal(t, "10", father.References["MockService"].Methods[0].Retries)
 	assert.Equal(t, &[]bool{false}[0], father.Check)
-	assert.Equal(t, "dubbo", father.ApplicationConfig.Name)
+	assert.Equal(t, "dubbo", father.Application.Name)
 }
 
 func TestAppExternalRefresh(t *testing.T) {
-	c := &BaseConfig{}
+	c := &Config{}
 	mockMap := getMockMap()
 	mockMap["dubbo.reference.com.MockService.retries"] = "5"
 
@@ -148,27 +150,27 @@ func TestAppExternalRefresh(t *testing.T) {
 	mockMap["dubbo.consumer.check"] = "true"
 	config.GetEnvInstance().UpdateAppExternalConfigMap(mockMap)
 
-	father := &ConsumerConfig{
+	father := &config2.ConsumerConfig{
 		Check: &[]bool{true}[0],
-		BaseConfig: BaseConfig{
-			ApplicationConfig: baseAppConfig,
+		Config: Config{
+			Application: baseAppConfig,
 		},
 		Registries: baseRegistries,
 		References: baseMockRef,
 	}
 
 	c.SetFatherConfig(father)
-	c.fresh()
+	//c.fresh()
 	assert.Equal(t, "mock100", father.Registries["shanghai_reg1"].Protocol)
 	assert.Equal(t, "10", father.References["MockService"].Retries)
 
 	assert.Equal(t, "10", father.References["MockService"].Methods[0].Retries)
 	assert.Equal(t, &[]bool{true}[0], father.Check)
-	assert.Equal(t, "dubbo", father.ApplicationConfig.Name)
+	assert.Equal(t, "dubbo", father.Application.Name)
 }
 
 func TestAppExternalWithoutIDRefresh(t *testing.T) {
-	c := &BaseConfig{}
+	c := &Config{}
 	mockMap := getMockMap()
 	delete(mockMap, "dubbo.reference.com.MockService.MockService.retries")
 	mockMap["dubbo.reference.com.MockService.retries"] = "10"
@@ -176,27 +178,27 @@ func TestAppExternalWithoutIDRefresh(t *testing.T) {
 	config.GetEnvInstance().UpdateExternalConfigMap(mockMap)
 	mockMap["dubbo.consumer.check"] = "true"
 	config.GetEnvInstance().UpdateAppExternalConfigMap(mockMap)
-	father := &ConsumerConfig{
+	father := &config2.ConsumerConfig{
 		Check: &[]bool{true}[0],
-		BaseConfig: BaseConfig{
-			ApplicationConfig: baseAppConfig,
+		Config: Config{
+			Application: baseAppConfig,
 		},
 		Registries: baseRegistries,
 		References: baseMockRef,
 	}
 
 	c.SetFatherConfig(father)
-	c.fresh()
+	//c.fresh()
 	assert.Equal(t, "mock100", father.Registries["shanghai_reg1"].Protocol)
 	assert.Equal(t, "10", father.References["MockService"].Retries)
 
 	assert.Equal(t, "10", father.References["MockService"].Methods[0].Retries)
 	assert.Equal(t, &[]bool{true}[0], father.Check)
-	assert.Equal(t, "dubbo", father.ApplicationConfig.Name)
+	assert.Equal(t, "dubbo", father.Application.Name)
 }
 
 func TestRefreshSingleRegistry(t *testing.T) {
-	c := &BaseConfig{}
+	c := &Config{}
 	mockMap := map[string]string{}
 	mockMap["dubbo.registry.address"] = "mock100://127.0.0.1:2181"
 	mockMap["dubbo.reference.com.MockService.MockService.retries"] = "10"
@@ -207,28 +209,28 @@ func TestRefreshSingleRegistry(t *testing.T) {
 	config.GetEnvInstance().UpdateExternalConfigMap(mockMap)
 	config.GetEnvInstance().UpdateAppExternalConfigMap(map[string]string{})
 
-	father := &ConsumerConfig{
+	father := &config2.ConsumerConfig{
 		Check: &[]bool{true}[0],
-		BaseConfig: BaseConfig{
-			ApplicationConfig: baseAppConfig,
+		Config: Config{
+			Application: baseAppConfig,
 		},
-		Registries: map[string]*RegistryConfig{},
-		Registry:   &RegistryConfig{},
+		Registries: map[string]*config2.RegistryConfig{},
+		Registry:   &config2.RegistryConfig{},
 		References: baseMockRef,
 	}
 
 	c.SetFatherConfig(father)
-	c.fresh()
+	//c.fresh()
 	assert.Equal(t, "mock100://127.0.0.1:2181", father.Registry.Address)
 	assert.Equal(t, "10", father.References["MockService"].Retries)
 
 	assert.Equal(t, "10", father.References["MockService"].Methods[0].Retries)
 	assert.Equal(t, &[]bool{false}[0], father.Check)
-	assert.Equal(t, "dubbo", father.ApplicationConfig.Name)
+	assert.Equal(t, "dubbo", father.Application.Name)
 }
 
 func TestRefreshProvider(t *testing.T) {
-	c := &BaseConfig{}
+	c := &Config{}
 	mockMap := getMockMap()
 	delete(mockMap, "dubbo.reference.com.MockService.MockService.retries")
 	mockMap["dubbo.service.com.MockService.MockService.retries"] = "10"
@@ -239,12 +241,12 @@ func TestRefreshProvider(t *testing.T) {
 	config.GetEnvInstance().UpdateExternalConfigMap(mockMap)
 	config.GetEnvInstance().UpdateAppExternalConfigMap(map[string]string{})
 
-	father := &ProviderConfig{
-		BaseConfig: BaseConfig{
-			ApplicationConfig: baseAppConfig,
+	father := &config2.ProviderConfig{
+		Config: Config{
+			Application: baseAppConfig,
 		},
 		Registries: baseRegistries,
-		Services: map[string]*ServiceConfig{
+		Services: map[string]*config2.ServiceConfig{
 			"MockService": {
 				InterfaceName: "com.MockService",
 				Protocol:      "mock",
@@ -253,7 +255,7 @@ func TestRefreshProvider(t *testing.T) {
 				Retries:       "3",
 				Group:         "huadong_idc",
 				Version:       "1.0.0",
-				Methods: []*MethodConfig{
+				Methods: []*config2.MethodConfig{
 					{
 						InterfaceId:   "MockService",
 						InterfaceName: "com.MockService",
@@ -274,18 +276,18 @@ func TestRefreshProvider(t *testing.T) {
 	}
 
 	c.SetFatherConfig(father)
-	c.fresh()
+	//c.fresh()
 	assert.Equal(t, "mock100", father.Registries["shanghai_reg1"].Protocol)
 	assert.Equal(t, "10", father.Services["MockService"].Retries)
 
 	assert.Equal(t, "10", father.Services["MockService"].Methods[0].Retries)
-	assert.Equal(t, "dubbo", father.ApplicationConfig.Name)
+	assert.Equal(t, "dubbo", father.Application.Name)
 	assert.Equal(t, "20001", father.Protocols["jsonrpc1"].Port)
 }
 
 func TestInitializeStruct(t *testing.T) {
-	testConsumerConfig := &ConsumerConfig{}
-	tp := reflect.TypeOf(ConsumerConfig{})
+	testConsumerConfig := &config2.ConsumerConfig{}
+	tp := reflect.TypeOf(config2.ConsumerConfig{})
 	v := reflect.New(tp)
 	initializeStruct(tp, v.Elem())
 	t.Logf("testConsumerConfig type:%s", reflect.ValueOf(testConsumerConfig).Elem().Type().String())

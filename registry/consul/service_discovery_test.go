@@ -18,6 +18,7 @@
 package consul
 
 import (
+	"dubbo.apache.org/dubbo-go/v3/config/service/discovery"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -55,7 +56,7 @@ func TestConsulServiceDiscovery_newConsulServiceDiscovery(t *testing.T) {
 	_, err := newConsulServiceDiscovery(name)
 	assert.NotNil(t, err)
 
-	sdc := &config.ServiceDiscoveryConfig{
+	sdc := &discovery.Config{
 		Protocol:  "consul",
 		RemoteRef: "mock",
 	}
@@ -177,7 +178,7 @@ func TestConsulServiceDiscovery_CRUD(t *testing.T) {
 }
 
 func prepareData() {
-	config.GetBaseConfig().ServiceDiscoveries[testName] = &config.ServiceDiscoveryConfig{
+	config.GetBaseConfig().ServiceDiscoveries[testName] = &discovery.Config{
 		Protocol:  "consul",
 		RemoteRef: testName,
 	}

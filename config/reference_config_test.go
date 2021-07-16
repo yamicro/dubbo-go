@@ -19,6 +19,8 @@ package config
 
 import (
 	"context"
+	"dubbo.apache.org/dubbo-go/v3/config/application"
+	"dubbo.apache.org/dubbo-go/v3/config/root"
 	"sync"
 	"testing"
 )
@@ -41,8 +43,8 @@ var regProtocol protocol.Protocol
 
 func doInitConsumer() {
 	consumerConfig = &ConsumerConfig{
-		BaseConfig: BaseConfig{
-			ApplicationConfig: &ApplicationConfig{
+		Config: root.Config{
+			Application: &application.Config{
 				Organization: "dubbo_org",
 				Name:         "dubbo",
 				Module:       "module",
@@ -143,8 +145,8 @@ func doInitConsumerAsync() {
 
 func doInitConsumerWithSingleRegistry() {
 	consumerConfig = &ConsumerConfig{
-		BaseConfig: BaseConfig{
-			ApplicationConfig: &ApplicationConfig{
+		Config: root.Config{
+			Application: &application.Config{
 				Organization: "dubbo_org",
 				Name:         "dubbo",
 				Module:       "module",

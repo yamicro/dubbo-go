@@ -15,21 +15,22 @@
  * limitations under the License.
  */
 
-package config
+package discovery
 
-var defaultHistogramBucket = []float64{10, 50, 100, 200, 500, 1000, 10000}
+import "dubbo.apache.org/dubbo-go/v3/common/constant"
 
-// This is the config struct for all metrics implementation
-type MetricConfig struct {
-	Reporters       []string  `yaml:"reporters" json:"reporters,omitempty"`
-	HistogramBucket []float64 `yaml:"histogram_bucket" json:"histogram_bucket,omitempty"`
+// Config will be used to create
+type Config struct {
+	// Protocol indicate which implementation will be used.
+	// for example, if the Protocol is nacos, it means that we will use nacosServiceDiscovery
+	Protocol string `yaml:"protocol" json:"protocol,omitempty" property:"protocol"`
+	// Group, usually you don't need to config this field.
+	// you can use this to do some isolation
+	Group string `yaml:"group" json:"group,omitempty"`
+	// RemoteRef is the reference point to RemoteConfig which will be used to create remotes instances.
+	RemoteRef string `yaml:"remote_ref" json:"remote_ref,omitempty" property:"remote_ref"`
 }
 
-// find the histogram bucket
-// if it's empty, the default value will be return
-func (mc *MetricConfig) GetHistogramBucket() []float64 {
-	if len(mc.HistogramBucket) == 0 {
-		mc.HistogramBucket = defaultHistogramBucket
-	}
-	return mc.HistogramBucket
+func (c *Config) Prefix() string {
+	return constant.ServiceDiscPrefix
 }

@@ -56,7 +56,7 @@ func init() {
 		}
 	}()
 
-	if consumerConfig.ApplicationConfig == nil {
+	if consumerConfig.Application == nil {
 		return
 	}
 	protocolConf := config.GetConsumerConfig().ProtocolConf

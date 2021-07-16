@@ -121,7 +121,7 @@ func newHistogramVec(side string) *prometheus.HistogramVec {
 			Namespace: namespace,
 			Subsystem: side,
 			Name:      serviceKey + histogramSuffix,
-			Help:      "This is the dubbo's histogram metrics",
+			Help:      "This is the dubbo's histogram metric",
 			Buckets:   mc.GetHistogramBucket(),
 		},
 		labelNames)
@@ -145,7 +145,7 @@ func newSummaryVec(side string) *prometheus.SummaryVec {
 	return prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
 			Namespace: namespace,
-			Help:      "This is the dubbo's summary metrics",
+			Help:      "This is the dubbo's summary metric",
 			Subsystem: side,
 			Name:      serviceKey + summarySuffix,
 			Objectives: map[float64]float64{
@@ -162,7 +162,7 @@ func newSummaryVec(side string) *prometheus.SummaryVec {
 }
 
 // newPrometheusReporter create new prometheusReporter
-// it will register the metrics into prometheus
+// it will register the metric into prometheus
 func newPrometheusReporter() metrics.Reporter {
 	if reporterInstance == nil {
 		reporterInitOnce.Do(func() {

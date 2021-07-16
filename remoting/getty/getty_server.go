@@ -46,7 +46,7 @@ func initServer(protocol string) {
 	// load clientconfig from provider_config
 	// default use dubbo
 	providerConfig := config.GetProviderConfig()
-	if providerConfig.ApplicationConfig == nil {
+	if providerConfig.Application == nil {
 		return
 	}
 	protocolConf := providerConfig.ProtocolConf

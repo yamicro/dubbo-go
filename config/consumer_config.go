@@ -19,6 +19,7 @@ package config
 
 import (
 	"bytes"
+	"dubbo.apache.org/dubbo-go/v3/config/root"
 	"time"
 )
 
@@ -39,7 +40,7 @@ const (
 
 // ConsumerConfig is Consumer default configuration
 type ConsumerConfig struct {
-	BaseConfig   `yaml:",inline" property:"base"`
+	root.Config  `yaml:",inline" property:"base"`
 	configCenter `yaml:"-"`
 	Filter       string `yaml:"filter" json:"filter,omitempty" property:"filter"`
 	// client
@@ -134,7 +135,7 @@ func configCenterRefreshConsumer() error {
 	}
 	if consumerConfig.ConfigCenterConfig != nil {
 		consumerConfig.SetFatherConfig(consumerConfig)
-		if err = consumerConfig.startConfigCenter((*consumerConfig).BaseConfig); err != nil {
+		if err = consumerConfig.startConfigCenter((*consumerConfig).Config); err != nil {
 			return perrors.Errorf("start config center error , error message is {%v}", perrors.WithStack(err))
 		}
 		consumerConfig.fresh()

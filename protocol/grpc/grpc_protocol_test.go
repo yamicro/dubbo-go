@@ -18,6 +18,8 @@
 package grpc
 
 import (
+	"dubbo.apache.org/dubbo-go/v3/config/application"
+	"dubbo.apache.org/dubbo-go/v3/config/root"
 	"testing"
 	"time"
 )
@@ -35,8 +37,8 @@ import (
 
 func doInitProvider() {
 	providerConfig := config.ProviderConfig{
-		BaseConfig: config.BaseConfig{
-			ApplicationConfig: &config.ApplicationConfig{
+		Config: root.Config{
+			Application: &application.Config{
 				Organization: "dubbo_org",
 				Name:         "BDTService",
 				Module:       "module",

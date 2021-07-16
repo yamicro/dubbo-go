@@ -18,10 +18,14 @@
 package config
 
 import (
-	"flag"
+	"dubbo.apache.org/dubbo-go/v3/config/application"
+	"dubbo.apache.org/dubbo-go/v3/config/metadata"
+	"dubbo.apache.org/dubbo-go/v3/config/metric"
+	"dubbo.apache.org/dubbo-go/v3/config/root"
+	"dubbo.apache.org/dubbo-go/v3/config/service/discovery"
 	"fmt"
+	"github.com/spf13/viper"
 	"io/ioutil"
-	"os"
 	"reflect"
 	"strconv"
 	"sync"
@@ -46,8 +50,8 @@ import (
 var (
 	consumerConfig *ConsumerConfig
 	providerConfig *ProviderConfig
-	// baseConfig = providerConfig.BaseConfig or consumerConfig
-	baseConfig *BaseConfig
+	// baseConfig = providerConfig.Config or consumerConfig
+	baseConfig *root.Config
 	sslEnabled = false
 
 	// configAccessMutex is used to make sure that xxxxConfig will only be created once if needed.
@@ -61,37 +65,98 @@ var (
 	uniformDestRuleConfigPath       string
 )
 
+// config config
+type config struct {
+	// config file name default application
+	name string
+	// config file type default yaml
+	genre string
+	// config file path default ./conf
+	path string
+}
+
+type optionFunc func(*config)
+
+func (fn optionFunc) apply(vc *config) {
+	fn(vc)
+}
+
+type Option interface {
+	apply(vc *config)
+}
+
+func Load(opts ...Option) *root.Config {
+	// pares CommandLine
+	parseCommandLine()
+
+	conf := &config{
+		viper.GetString("prefix"),
+		viper.GetString("name"),
+		viper.GetString("genre"),
+		viper.GetString("path"),
+	}
+
+	for _, opt := range opts {
+		opt.apply(conf)
+	}
+
+	v := viper.New()
+	v.AddConfigPath(conf.path)
+	v.SetConfigName(conf.name)
+	v.SetConfigType(conf.genre)
+
+	if err := v.ReadInConfig(); err != nil {
+		panic(err)
+	}
+
+	var bc root.Config
+	if err := v.UnmarshalKey(conf.prefix, &bc); err != nil {
+		fmt.Println(err)
+	}
+	bc.SetViper(v)
+
+	validate := validator.New()
+	uni := translator.New(en.New(), zh.New())
+	trans, _ := uni.GetTranslator("zh")
+	_ = zh_trans.RegisterDefaultTranslations(validate, trans)
+
+	bc.SetValidate(validate)
+	bc.SetTranslator(trans)
+
+	return &bc
+}
+
 // loaded consumer & provider config from xxx.yml, and log config from xxx.xml
 // Namely: dubbo.consumer.xml & dubbo.provider.xml in java dubbo
-func DefaultInit() []LoaderInitOption {
-	var (
-		confConFile string
-		confProFile string
-	)
-
-	fs := flag.NewFlagSet("config", flag.ContinueOnError)
-	fs.StringVar(&confConFile, "conConf", os.Getenv(constant.CONF_CONSUMER_FILE_PATH), "default client config path")
-	fs.StringVar(&confProFile, "proConf", os.Getenv(constant.CONF_PROVIDER_FILE_PATH), "default server config path")
-	fs.StringVar(&confRouterFile, "rouConf", os.Getenv(constant.CONF_ROUTER_FILE_PATH), "default router config path")
-	fs.StringVar(&uniformVirtualServiceConfigPath, "vsConf", os.Getenv(constant.CONF_VIRTUAL_SERVICE_FILE_PATH), "default virtual service of uniform router config path")
-	fs.StringVar(&uniformDestRuleConfigPath, "drConf", os.Getenv(constant.CONF_DEST_RULE_FILE_PATH), "default destination rule of uniform router config path")
-	fs.Parse(os.Args[1:])
-	for len(fs.Args()) != 0 {
-		fs.Parse(fs.Args()[1:])
-	}
-	// If user did not set the environment variables or flags,
-	// we provide default value
-	if confConFile == "" {
-		confConFile = constant.DEFAULT_CONSUMER_CONF_FILE_PATH
-	}
-	if confProFile == "" {
-		confProFile = constant.DEFAULT_PROVIDER_CONF_FILE_PATH
-	}
-	if confRouterFile == "" {
-		confRouterFile = constant.DEFAULT_ROUTER_CONF_FILE_PATH
-	}
-	return []LoaderInitOption{RouterInitOption(confRouterFile), BaseInitOption(""), ConsumerInitOption(confConFile), ProviderInitOption(confProFile)}
-}
+//func DefaultInit() []LoaderInitOption {
+//	var (
+//		confConFile string
+//		confProFile string
+//	)
+//
+//	fs := flag.NewFlagSet("config", flag.ContinueOnError)
+//	fs.StringVar(&confConFile, "conConf", os.Getenv(constant.CONF_CONSUMER_FILE_PATH), "default client config path")
+//	fs.StringVar(&confProFile, "proConf", os.Getenv(constant.CONF_PROVIDER_FILE_PATH), "default server config path")
+//	fs.StringVar(&confRouterFile, "rouConf", os.Getenv(constant.CONF_ROUTER_FILE_PATH), "default router config path")
+//	fs.StringVar(&uniformVirtualServiceConfigPath, "vsConf", os.Getenv(constant.CONF_VIRTUAL_SERVICE_FILE_PATH), "default virtual service of uniform router config path")
+//	fs.StringVar(&uniformDestRuleConfigPath, "drConf", os.Getenv(constant.CONF_DEST_RULE_FILE_PATH), "default destination rule of uniform router config path")
+//	fs.Parse(os.Args[1:])
+//	for len(fs.Args()) != 0 {
+//		fs.Parse(fs.Args()[1:])
+//	}
+//	// If user did not set the environment variables or flags,
+//	// we provide default value
+//	if confConFile == "" {
+//		confConFile = constant.DEFAULT_CONSUMER_CONF_FILE_PATH
+//	}
+//	if confProFile == "" {
+//		confProFile = constant.DEFAULT_PROVIDER_CONF_FILE_PATH
+//	}
+//	if confRouterFile == "" {
+//		confRouterFile = constant.DEFAULT_ROUTER_CONF_FILE_PATH
+//	}
+//	return []LoaderInitOption{RouterInitOption(confRouterFile), BaseInitOption(""), ConsumerInitOption(confConFile), ProviderInitOption(confProFile)}
+//}
 
 // setDefaultValue set default value for providerConfig or consumerConfig if it is null
 func setDefaultValue(target interface{}) {
@@ -112,16 +177,16 @@ func setDefaultValue(target interface{}) {
 				Port: strconv.Itoa(constant.DEFAULT_PORT),
 			}
 		}
-		if p.ApplicationConfig == nil {
-			p.ApplicationConfig = NewDefaultApplicationConfig()
+		if p.Application == nil {
+			p.Application = NewDefaultApplicationConfig()
 		}
 	default:
 		c := target.(*ConsumerConfig)
 		if len(c.Registries) == 0 {
 			c.Registries[constant.DEFAULT_REGISTRY_ZK_ID] = registryConfig
 		}
-		if c.ApplicationConfig == nil {
-			c.ApplicationConfig = NewDefaultApplicationConfig()
+		if c.Application == nil {
+			c.Application = NewDefaultApplicationConfig()
 		}
 	}
 }
@@ -132,7 +197,7 @@ func checkRegistries(registries map[string]*RegistryConfig, singleRegistry *Regi
 	}
 }
 
-func checkApplicationName(config *ApplicationConfig) {
+func checkApplicationName(config *application.Config) {
 	if config == nil || len(config.Name) == 0 {
 		errMsg := "application config must not be nil, pls check your configuration"
 		logger.Errorf(errMsg)
@@ -158,13 +223,13 @@ func loadConsumerConfig() {
 		}
 	}
 
-	checkApplicationName(consumerConfig.ApplicationConfig)
+	checkApplicationName(consumerConfig.Application)
 	if err := configCenterRefreshConsumer(); err != nil {
 		logger.Errorf("[consumer config center refresh] %#v", err)
 	}
 
 	// start the metadata report if config set
-	if err := startMetadataReport(GetApplicationConfig().MetadataType, GetBaseConfig().MetadataReportConfig); err != nil {
+	if err := metadata.startMetadataReport(GetApplicationConfig().MetadataType, GetBaseConfig().MetadataReport); err != nil {
 		logger.Errorf("Provider starts metadata report error, and the error is {%#v}", err)
 		return
 	}
@@ -246,13 +311,13 @@ func loadProviderConfig() {
 		}
 	}
 
-	checkApplicationName(providerConfig.ApplicationConfig)
+	checkApplicationName(providerConfig.Application)
 	if err := configCenterRefreshProvider(); err != nil {
 		logger.Errorf("[provider config center refresh] %#v", err)
 	}
 
 	// start the metadata report if config set
-	if err := startMetadataReport(GetApplicationConfig().MetadataType, GetBaseConfig().MetadataReportConfig); err != nil {
+	if err := metadata.startMetadataReport(GetApplicationConfig().MetadataType, GetBaseConfig().MetadataReport); err != nil {
 		logger.Errorf("Provider starts metadata report error, and the error is {%#v}", err)
 		return
 	}
@@ -419,12 +484,12 @@ func RPCService(service common.RPCService) {
 // we use double-check to reduce race condition
 // In general, it will be locked 0 or 1 time.
 // So you don't need to worry about the race condition
-func GetMetricConfig() *MetricConfig {
+func GetMetricConfig() *metric.Config {
 	if GetBaseConfig().MetricConfig == nil {
 		configAccessMutex.Lock()
 		defer configAccessMutex.Unlock()
 		if GetBaseConfig().MetricConfig == nil {
-			GetBaseConfig().MetricConfig = &MetricConfig{}
+			GetBaseConfig().MetricConfig = &metric.Config{}
 		}
 	}
 	return GetBaseConfig().MetricConfig
@@ -436,15 +501,15 @@ func GetMetricConfig() *MetricConfig {
 // we use double-check to reduce race condition
 // In general, it will be locked 0 or 1 time.
 // So you don't need to worry about the race condition
-func GetApplicationConfig() *ApplicationConfig {
-	if GetBaseConfig().ApplicationConfig == nil {
+func GetApplicationConfig() *application.Config {
+	if GetBaseConfig().Application == nil {
 		configAccessMutex.Lock()
 		defer configAccessMutex.Unlock()
-		if GetBaseConfig().ApplicationConfig == nil {
-			GetBaseConfig().ApplicationConfig = &ApplicationConfig{}
+		if GetBaseConfig().Application == nil {
+			GetBaseConfig().Application = &application.Config{}
 		}
 	}
-	return GetBaseConfig().ApplicationConfig
+	return GetBaseConfig().Application
 }
 
 // GetProviderConfig find the provider config
@@ -476,17 +541,17 @@ func GetConsumerConfig() ConsumerConfig {
 	return *consumerConfig
 }
 
-func GetBaseConfig() *BaseConfig {
+func GetBaseConfig() *root.Config {
 	if baseConfig == nil {
 		configAccessMutex.Lock()
 		defer configAccessMutex.Unlock()
 		if baseConfig == nil {
-			baseConfig = &BaseConfig{
-				MetricConfig:       &MetricConfig{},
+			baseConfig = &root.Config{
+				MetricConfig:       &metric.Config{},
 				ConfigCenterConfig: &ConfigCenterConfig{},
 				Remotes:            make(map[string]*RemoteConfig),
-				ApplicationConfig:  &ApplicationConfig{},
-				ServiceDiscoveries: make(map[string]*ServiceDiscoveryConfig),
+				Application:        &application.Config{},
+				ServiceDiscoveries: make(map[string]*discovery.Config),
 			}
 		}
 	}

@@ -148,18 +148,20 @@ const (
 )
 
 const (
+	keyDelimiter               = "."
 	RegistryConfigPrefix       = "dubbo.registries."
 	SingleRegistryConfigPrefix = "dubbo.registry."
 	ReferenceConfigPrefix      = "dubbo.reference."
 	ServiceConfigPrefix        = "dubbo.service."
-	ConfigBasePrefix           = "dubbo.base."
+	ConfigRootPrefix           = "dubbo"
 	RemotePrefix               = "dubbo.remote."
-	ServiceDiscPrefix          = "dubbo.service-discovery."
+	ServiceDiscPrefix          = ConfigRootPrefix + keyDelimiter + "service-discovery"
+	ApplicationPrefix          = ConfigRootPrefix + keyDelimiter + "application"
 	ProtocolConfigPrefix       = "dubbo.protocols."
 	ProviderConfigPrefix       = "dubbo.provider."
 	ConsumerConfigPrefix       = "dubbo.consumer."
 	ShutdownConfigPrefix       = "dubbo.shutdown."
-	MetadataReportPrefix       = "dubbo.metadata-report."
+	MetadataReportPrefix       = ConfigRootPrefix + keyDelimiter + "metadata-report"
 	RouterConfigPrefix         = "dubbo.router."
 )
 

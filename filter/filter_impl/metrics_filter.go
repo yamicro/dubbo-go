@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	metricFilterName = "metrics"
+	metricFilterName = "metric"
 )
 
 var metricFilterInstance filter.Filter
@@ -42,10 +42,10 @@ func init() {
 }
 
 // metricFilter will calculate the invocation's duration and the report to the reporters
-// If you want to use this filter to collect the metrics,
+// If you want to use this filter to collect the metric,
 // Adding this into your configuration file, like:
-// filter: "metrics"
-// metrics:
+// filter: "metric"
+// metric:
 //   reporter:
 //     - "your reporter" # here you should specify the reporter, for example 'prometheus'
 // more info please take a look at dubbo-samples projects

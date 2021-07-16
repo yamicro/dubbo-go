@@ -57,7 +57,7 @@ func initClient(protocol string) {
 	// load clientconfig from consumer_config
 	// default use dubbo
 	consumerConfig := config.GetConsumerConfig()
-	if consumerConfig.ApplicationConfig == nil {
+	if consumerConfig.Application == nil {
 		return
 	}
 	protocolConf := config.GetConsumerConfig().ProtocolConf

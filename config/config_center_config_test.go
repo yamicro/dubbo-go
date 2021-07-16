@@ -18,6 +18,7 @@
 package config
 
 import (
+	"dubbo.apache.org/dubbo-go/v3/config/root"
 	"testing"
 )
 
@@ -35,7 +36,7 @@ func TestStartConfigCenter(t *testing.T) {
 	extension.SetConfigCenterFactory("mock", func() config_center.DynamicConfigurationFactory {
 		return &config_center.MockDynamicConfigurationFactory{}
 	})
-	baseConfig := &BaseConfig{ConfigCenterConfig: &ConfigCenterConfig{
+	baseConfig := &root.Config{ConfigCenterConfig: &ConfigCenterConfig{
 		Protocol:   "mock",
 		Address:    "172.0.0.1",
 		Group:      "dubbo",
@@ -56,7 +57,7 @@ func TestStartConfigCenterWithRemoteRef(t *testing.T) {
 	})
 	m := make(map[string]*RemoteConfig)
 	m["mock"] = &RemoteConfig{Protocol: "mock", Address: "172.0.0.1"}
-	baseConfig := &BaseConfig{
+	baseConfig := &root.Config{
 		Remotes: m,
 		ConfigCenterConfig: &ConfigCenterConfig{
 			Group:      "dubbo",
@@ -79,7 +80,7 @@ func TestStartConfigCenterWithRemoteRefError(t *testing.T) {
 	})
 	m := make(map[string]*RemoteConfig)
 	m["mock"] = &RemoteConfig{Address: "172.0.0.1"}
-	baseConfig := &BaseConfig{
+	baseConfig := &root.Config{
 		Remotes: m,
 		ConfigCenterConfig: &ConfigCenterConfig{
 			Protocol:   "mock",

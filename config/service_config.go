@@ -292,13 +292,13 @@ func (c *ServiceConfig) getUrlMap() url.Values {
 	// todo: move
 	urlMap.Set(constant.SERIALIZATION_KEY, c.Serialization)
 	// application info
-	urlMap.Set(constant.APPLICATION_KEY, providerConfig.ApplicationConfig.Name)
-	urlMap.Set(constant.ORGANIZATION_KEY, providerConfig.ApplicationConfig.Organization)
-	urlMap.Set(constant.NAME_KEY, providerConfig.ApplicationConfig.Name)
-	urlMap.Set(constant.MODULE_KEY, providerConfig.ApplicationConfig.Module)
-	urlMap.Set(constant.APP_VERSION_KEY, providerConfig.ApplicationConfig.Version)
-	urlMap.Set(constant.OWNER_KEY, providerConfig.ApplicationConfig.Owner)
-	urlMap.Set(constant.ENVIRONMENT_KEY, providerConfig.ApplicationConfig.Environment)
+	urlMap.Set(constant.APPLICATION_KEY, providerConfig.Application.Name)
+	urlMap.Set(constant.ORGANIZATION_KEY, providerConfig.Application.Organization)
+	urlMap.Set(constant.NAME_KEY, providerConfig.Application.Name)
+	urlMap.Set(constant.MODULE_KEY, providerConfig.Application.Module)
+	urlMap.Set(constant.APP_VERSION_KEY, providerConfig.Application.Version)
+	urlMap.Set(constant.OWNER_KEY, providerConfig.Application.Owner)
+	urlMap.Set(constant.ENVIRONMENT_KEY, providerConfig.Application.Environment)
 
 	// filter
 	urlMap.Set(constant.SERVICE_FILTER_KEY, mergeValue(providerConfig.Filter, c.Filter, constant.DEFAULT_SERVICE_FILTERS))

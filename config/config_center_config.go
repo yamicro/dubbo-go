@@ -18,6 +18,7 @@
 package config
 
 import (
+	"dubbo.apache.org/dubbo-go/v3/config/root"
 	"net/url"
 	"reflect"
 )
@@ -83,7 +84,7 @@ type configCenter struct{}
 
 // toURL will compatible with baseConfig.ConfigCenterConfig.Address and baseConfig.ConfigCenterConfig.RemoteRef before 1.6.0
 // After 1.6.0 will not compatible, only baseConfig.ConfigCenterConfig.RemoteRef
-func (b *configCenter) toURL(baseConfig BaseConfig) (*common.URL, error) {
+func (b *configCenter) toURL(baseConfig root.Config) (*common.URL, error) {
 	if len(baseConfig.ConfigCenterConfig.Address) > 0 {
 		return common.NewURL(baseConfig.ConfigCenterConfig.Address,
 			common.WithProtocol(baseConfig.ConfigCenterConfig.Protocol), common.WithParams(baseConfig.ConfigCenterConfig.GetUrlMap()))
@@ -105,7 +106,7 @@ func (b *configCenter) toURL(baseConfig BaseConfig) (*common.URL, error) {
 
 // startConfigCenter will start the config center.
 // it will prepare the environment
-func (b *configCenter) startConfigCenter(baseConfig BaseConfig) error {
+func (b *configCenter) startConfigCenter(baseConfig root.Config) error {
 	newUrl, err := b.toURL(baseConfig)
 	if err != nil {
 		return err
@@ -117,7 +118,7 @@ func (b *configCenter) startConfigCenter(baseConfig BaseConfig) error {
 	return nil
 }
 
-func (b *configCenter) prepareEnvironment(baseConfig BaseConfig, configCenterUrl *common.URL) error {
+func (b *configCenter) prepareEnvironment(baseConfig root.Config, configCenterUrl *common.URL) error {
 	factory := extension.GetConfigCenterFactory(configCenterUrl.Protocol)
 	dynamicConfig, err := factory.GetDynamicConfiguration(configCenterUrl)
 	if err != nil {
@@ -132,12 +133,12 @@ func (b *configCenter) prepareEnvironment(baseConfig BaseConfig, configCenterUrl
 	}
 	var appGroup string
 	var appContent string
-	if providerConfig != nil && providerConfig.ApplicationConfig != nil &&
+	if providerConfig != nil && providerConfig.Application != nil &&
 		reflect.ValueOf(baseConfig.fatherConfig).Elem().Type().Name() == "ProviderConfig" {
-		appGroup = providerConfig.ApplicationConfig.Name
-	} else if consumerConfig != nil && consumerConfig.ApplicationConfig != nil &&
+		appGroup = providerConfig.Application.Name
+	} else if consumerConfig != nil && consumerConfig.Application != nil &&
 		reflect.ValueOf(baseConfig.fatherConfig).Elem().Type().Name() == "ConsumerConfig" {
-		appGroup = consumerConfig.ApplicationConfig.Name
+		appGroup = consumerConfig.Application.Name
 	}
 
 	if len(appGroup) != 0 {

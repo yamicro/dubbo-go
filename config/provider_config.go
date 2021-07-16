@@ -19,6 +19,7 @@ package config
 
 import (
 	"bytes"
+	"dubbo.apache.org/dubbo-go/v3/config/root"
 )
 
 import (
@@ -33,7 +34,7 @@ import (
 
 // ProviderConfig is the default configuration of service provider
 type ProviderConfig struct {
-	BaseConfig     `yaml:",inline" property:"base"`
+	root.Config    `yaml:",inline" property:"base"`
 	configCenter   `yaml:"-"`
 	Filter         string                     `yaml:"filter" json:"filter,omitempty" property:"filter"`
 	ProxyFactory   string                     `yaml:"proxy_factory" default:"default" json:"proxy_factory,omitempty" property:"proxy_factory"`
@@ -95,7 +96,7 @@ func configCenterRefreshProvider() error {
 	// fresh it
 	if providerConfig.ConfigCenterConfig != nil {
 		providerConfig.fatherConfig = providerConfig
-		if err := providerConfig.startConfigCenter((*providerConfig).BaseConfig); err != nil {
+		if err := providerConfig.startConfigCenter((*providerConfig).Config); err != nil {
 			return perrors.Errorf("start config center error , error message is {%v}", perrors.WithStack(err))
 		}
 		providerConfig.fresh()

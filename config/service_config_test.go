@@ -18,6 +18,10 @@
 package config
 
 import (
+	"dubbo.apache.org/dubbo-go/v3/config/application"
+	"dubbo.apache.org/dubbo-go/v3/config/metadata/report"
+	"dubbo.apache.org/dubbo-go/v3/config/root"
+	"dubbo.apache.org/dubbo-go/v3/config/service/discovery"
 	"testing"
 )
 
@@ -33,8 +37,8 @@ import (
 
 func doInitProvider() {
 	providerConfig = &ProviderConfig{
-		BaseConfig: BaseConfig{
-			ApplicationConfig: &ApplicationConfig{
+		Config: root.Config{
+			Application: &application.Config{
 				Organization: "dubbo_org",
 				Name:         "dubbo",
 				Module:       "module",
@@ -51,13 +55,13 @@ func doInitProvider() {
 					Params:     nil,
 				},
 			},
-			ServiceDiscoveries: map[string]*ServiceDiscoveryConfig{
+			ServiceDiscoveries: map[string]*discovery.Config{
 				"mock_servicediscovery": {
 					Protocol:  "mock",
 					RemoteRef: "test1",
 				},
 			},
-			MetadataReportConfig: &MetadataReportConfig{
+			MetadataReport: &report.Config{
 				Protocol:  "mock",
 				RemoteRef: "test1",
 			},
