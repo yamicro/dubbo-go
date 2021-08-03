@@ -45,7 +45,7 @@ type ConsumerConfig struct {
 	Registry []string `yaml:"registry" json:"registry,omitempty" property:"registry"`
 
 	RequestTimeout string `default:"3s" yaml:"request-timeout" json:"request-timeout,omitempty" property:"request-timeout"`
-	ProxyFactory   string `default:"default" yaml:"proxy-factory" json:"proxy-factory,omitempty" property:"proxy-factory"`
+	ProxyFactory   string `default:"default" yaml:"proxy" json:"proxy,omitempty" property:"proxy"`
 	Check          bool   `yaml:"check" json:"check,omitempty" property:"check"`
 
 	References map[string]*ReferenceConfig `yaml:"references" json:"references,omitempty" property:"references"`
