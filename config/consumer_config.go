@@ -70,7 +70,7 @@ func initConsumerConfig(rc *RootConfig) error {
 	if err := initReferenceConfig(consumer); err != nil {
 		return err
 	}
-	if err := defaults.Set(consumer); err != nil {
+	if err := consumer.check(); err != nil {
 		return err
 	}
 	for {
@@ -83,9 +83,10 @@ func initConsumerConfig(rc *RootConfig) error {
 	return nil
 }
 
-func (c *ConsumerConfig) CheckConfig() error {
-	// todo check
-	defaults.MustSet(c)
+func (c *ConsumerConfig) check() error {
+	if err := defaults.Set(c); err != nil {
+		return err
+	}
 	return verify(c)
 }
 

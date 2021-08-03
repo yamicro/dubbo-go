@@ -2,8 +2,6 @@ package config
 
 import (
 	"bytes"
-)
-import (
 	"dubbo.apache.org/dubbo-go/v3/common/constant"
 )
 
@@ -54,6 +52,11 @@ type RootConfig struct {
 	CacheFile string `yaml:"cache_file" json:"cache_file,omitempty" property:"cache_file"`
 }
 
+// Prefix dubbo
+func (RootConfig) Prefix() string {
+	return constant.DUBBO
+}
+
 func SetRootConfig(r RootConfig) {
 	rootConfig = &r
 }
@@ -66,11 +69,6 @@ type RootConfFunc func(*RootConfig)
 
 func (fn RootConfFunc) apply(vc *RootConfig) {
 	fn(vc)
-}
-
-// Prefix dubbo
-func (RootConfig) Prefix() string {
-	return constant.DUBBO
 }
 
 // InitConfig init config
@@ -197,6 +195,18 @@ func WithProtocols(protocols map[string]*ProtocolConfig) RootConfFunc {
 
 func GetRootConfig() *RootConfig {
 	return rootConfig
+}
+
+func GetConsumerConfig() *ConsumerConfig {
+	return rootConfig.Consumer
+}
+
+func GetProviderConfig() *ProviderConfig {
+	return rootConfig.Provider
+}
+
+func GetApplicationConfig() *ApplicationConfig {
+	return rootConfig.Application
 }
 
 // GetConfigCenterConfig get config center config
