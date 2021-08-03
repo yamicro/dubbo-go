@@ -2,6 +2,8 @@ package config
 
 import (
 	"bytes"
+)
+import (
 	"dubbo.apache.org/dubbo-go/v3/common/constant"
 )
 
@@ -52,26 +54,8 @@ type RootConfig struct {
 	CacheFile string `yaml:"cache_file" json:"cache_file,omitempty" property:"cache_file"`
 }
 
-func init() {
-	rootConfig = NewRootConfig()
-}
-
 func SetRootConfig(r RootConfig) {
 	rootConfig = &r
-}
-
-func NewRootConfig() *RootConfig {
-	return &RootConfig{
-		ConfigCenter:         &CenterConfig{},
-		ServiceDiscoveries:   make(map[string]*ServiceDiscoveryConfig),
-		MetadataReportConfig: &MetadataReportConfig{},
-		Application:          &ApplicationConfig{},
-		Registries:           make(map[string]*RegistryConfig),
-		Protocols:            make(map[string]*ProtocolConfig),
-		Provider:             NewProviderConfig(),
-		Consumer:             NewConsumerConfig(),
-		MetricConfig:         &MetricConfig{},
-	}
 }
 
 type rootConfOption interface {
@@ -133,9 +117,6 @@ func (rc *RootConfig) InitConfig(opts ...rootConfOption) error {
 	if err := initConsumerConfig(rc); err != nil {
 		return err
 	}
-
-	//rc.Provider.Load()
-	//rc.Consumer.Load()
 
 	return nil
 }
@@ -216,26 +197,6 @@ func WithProtocols(protocols map[string]*ProtocolConfig) RootConfFunc {
 
 func GetRootConfig() *RootConfig {
 	return rootConfig
-}
-
-func GetProviderConfig() *ProviderConfig {
-	if err := check(); err != nil {
-		return NewProviderConfig()
-	}
-	if rootConfig.Provider != nil {
-		return rootConfig.Provider
-	}
-	return NewProviderConfig()
-}
-
-func GetConsumerConfig() *ConsumerConfig {
-	if err := check(); err != nil {
-		return NewConsumerConfig()
-	}
-	if rootConfig.Consumer != nil {
-		return rootConfig.Consumer
-	}
-	return NewConsumerConfig()
 }
 
 // GetConfigCenterConfig get config center config
