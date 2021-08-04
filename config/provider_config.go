@@ -50,15 +50,9 @@ type ProviderConfig struct {
 	ready *atomic.Bool
 }
 
-// Prefix dubbo.provider
-func (c *ProviderConfig) Prefix() string {
-	return constant.ProviderConfigPrefix
-}
-
-func (c *ProviderConfig) check() error {
-	if err := defaults.Set(c); err != nil {
-		return err
-	}
+func (c *ProviderConfig) CheckConfig() error {
+	// todo check
+	defaults.MustSet(c)
 	return verify(c)
 }
 
@@ -71,13 +65,39 @@ func initProviderConfig(rc *RootConfig) error {
 	if err := initServiceConfig(provider); err != nil {
 		return err
 	}
-	if err := provider.check(); err != nil {
+	if err := defaults.Set(provider); err != nil {
 		return err
 	}
 	provider.Registry = translateRegistryIds(provider.Registry)
 	provider.Load()
 	rc.Provider = provider
 	return nil
+}
+
+func (c *ProviderConfig) Validate(r *RootConfig) {
+	ids := make([]string, 0)
+	for key := range r.Registries {
+		ids = append(ids, key)
+	}
+	c.Registry = removeDuplicateElement(ids)
+	for k, _ := range c.Services {
+		c.Services[k].Validate(r)
+	}
+	// todo set default application
+}
+
+// UnmarshalYAML unmarshals the ProviderConfig by @unmarshal function
+//func (c *ProviderConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+//	if err := defaults.Set(c); err != nil {
+//		return err
+//	}
+//	type plain ProviderConfig
+//	return unmarshal((*plain)(c))
+//}
+
+// Prefix dubbo.provider
+func (c *ProviderConfig) Prefix() string {
+	return constant.ProviderConfigPrefix
 }
 
 func (c *ProviderConfig) Load() {

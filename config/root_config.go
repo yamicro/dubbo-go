@@ -38,9 +38,10 @@ type RootConfig struct {
 	// Shutdown config
 	Shutdown *ShutdownConfig `yaml:"shutdown" json:"shutdown,omitempty" property:"shutdown"`
 
+    // Deprecated
 	Network map[interface{}]interface{} `yaml:"network" json:"network,omitempty" property:"network"`
 
-	Router *RouterConfig `yaml:"router" json:"router,omitempty" property:"router"`
+	Router []*RouterConfig `yaml:"router" json:"router,omitempty" property:"router"`
 	// is refresh action
 	refresh bool
 	// prefix              string
@@ -52,13 +53,26 @@ type RootConfig struct {
 	CacheFile string `yaml:"cache_file" json:"cache_file,omitempty" property:"cache_file"`
 }
 
-// Prefix dubbo
-func (RootConfig) Prefix() string {
-	return constant.DUBBO
+func init() {
+	rootConfig = NewRootConfig()
 }
 
 func SetRootConfig(r RootConfig) {
 	rootConfig = &r
+}
+
+func NewRootConfig() *RootConfig {
+	return &RootConfig{
+		ConfigCenter:         &CenterConfig{},
+		ServiceDiscoveries:   make(map[string]*ServiceDiscoveryConfig),
+		MetadataReportConfig: &MetadataReportConfig{},
+		Application:          &ApplicationConfig{},
+		Registries:           make(map[string]*RegistryConfig),
+		Protocols:            make(map[string]*ProtocolConfig),
+		Provider:             NewProviderConfig(),
+		Consumer:             NewConsumerConfig(),
+		MetricConfig:         &MetricConfig{},
+	}
 }
 
 type rootConfOption interface {
@@ -69,6 +83,11 @@ type RootConfFunc func(*RootConfig)
 
 func (fn RootConfFunc) apply(vc *RootConfig) {
 	fn(vc)
+}
+
+// Prefix dubbo
+func (RootConfig) Prefix() string {
+	return constant.DUBBO
 }
 
 // InitConfig init config
@@ -115,7 +134,6 @@ func (rc *RootConfig) InitConfig(opts ...rootConfOption) error {
 	if err := initConsumerConfig(rc); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -197,16 +215,24 @@ func GetRootConfig() *RootConfig {
 	return rootConfig
 }
 
-func GetConsumerConfig() *ConsumerConfig {
-	return rootConfig.Consumer
-}
-
 func GetProviderConfig() *ProviderConfig {
-	return rootConfig.Provider
+	if err := check(); err != nil {
+		return NewProviderConfig()
+	}
+	if rootConfig.Provider != nil {
+		return rootConfig.Provider
+	}
+	return NewProviderConfig()
 }
 
-func GetApplicationConfig() *ApplicationConfig {
-	return rootConfig.Application
+func GetConsumerConfig() *ConsumerConfig {
+	if err := check(); err != nil {
+		return NewConsumerConfig()
+	}
+	if rootConfig.Consumer != nil {
+		return rootConfig.Consumer
+	}
+	return NewConsumerConfig()
 }
 
 // GetConfigCenterConfig get config center config

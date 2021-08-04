@@ -19,7 +19,7 @@ package config
 
 import (
 	"container/list"
-
+	"dubbo.apache.org/dubbo-go/v3/protocol/protocolwrapper"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -41,7 +41,6 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common/extension"
 	"dubbo.apache.org/dubbo-go/v3/common/logger"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
-	"dubbo.apache.org/dubbo-go/v3/protocol/protocolwrapper"
 )
 
 // ServiceConfig is the configuration of the service provider
@@ -143,6 +142,14 @@ func (svc *ServiceConfig) check() error {
 	// svc.cacheProtocol = rootConfig.Protocols[0]
 	svc.export = true
 	return verify(svc)
+}
+
+func (svc *ServiceConfig) Validate(rootConfig *RootConfig) {
+	svc.rootConfig = rootConfig
+	svc.exported = atomic.NewBool(false)
+	svc.unexported = atomic.NewBool(false)
+	svc.export = true
+	// todo set default application
 }
 
 //getRegistryServices get registry services

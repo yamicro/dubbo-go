@@ -90,14 +90,6 @@ func (c *ConsumerConfig) check() error {
 	return verify(c)
 }
 
-func (c *ConsumerConfig) Validate(rootConfig *RootConfig) {
-	for k, _ := range c.References {
-		c.References[k].Validate(rootConfig)
-	}
-	c.rootConfig = rootConfig
-	// todo set default application
-}
-
 func (c *ConsumerConfig) Load() {
 	for key, ref := range c.References {
 		if ref.Generic {
