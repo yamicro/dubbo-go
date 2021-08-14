@@ -19,7 +19,6 @@ package config
 
 import (
 	"dubbo.apache.org/dubbo-go/v3/common/constant"
-	"fmt"
 	"github.com/creasty/defaults"
 )
 
@@ -56,7 +55,6 @@ func initApplicationConfig(rc *RootConfig) error {
 		return err
 	}
 	rc.Application = application
-	fmt.Println("Application")
 
 	return nil
 }
@@ -64,12 +62,4 @@ func initApplicationConfig(rc *RootConfig) error {
 func (ac *ApplicationConfig) check() error {
 	defaults.MustSet(ac)
 	return verify(ac)
-}
-
-func NewApplicationConfig(opts ...ApplicationConfigOpt) *ApplicationConfig {
-	newConfig := new(ApplicationConfig)
-	for _, v := range opts {
-		v(newConfig)
-	}
-	return newConfig
 }
