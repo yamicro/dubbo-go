@@ -22,13 +22,15 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common/extension"
 	"dubbo.apache.org/dubbo-go/v3/config_center"
 	"dubbo.apache.org/dubbo-go/v3/config_center/parser"
+	"fmt"
 )
+
+type nacosDynamicConfigurationFactory struct{}
 
 func init() {
 	extension.SetConfigCenterFactory("nacos", func() config_center.DynamicConfigurationFactory { return &nacosDynamicConfigurationFactory{} })
+	fmt.Println("init ConfigCenterFactory")
 }
-
-type nacosDynamicConfigurationFactory struct{}
 
 // GetDynamicConfiguration Get Configuration with URL
 func (f *nacosDynamicConfigurationFactory) GetDynamicConfiguration(url *common.URL) (config_center.DynamicConfiguration, error) {

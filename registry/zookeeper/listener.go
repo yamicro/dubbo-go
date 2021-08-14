@@ -20,6 +20,7 @@ package zookeeper
 import (
 	"strings"
 	"sync"
+	"time"
 )
 
 import (
@@ -156,6 +157,7 @@ func (l *RegistryConfigurationListener) Next() (*registry.ServiceEvent, error) {
 				logger.Warnf("update @result{%s}. But its connection to registry is invalid", e.Value)
 				continue
 			}
+			time.Sleep(100 * time.Microsecond)
 			return &registry.ServiceEvent{Action: e.ConfigType, Service: e.Value.(*common.URL)}, nil
 		}
 	}

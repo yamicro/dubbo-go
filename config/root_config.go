@@ -60,7 +60,7 @@ type RootConfig struct {
 
 	Router []*RouterConfig `yaml:"router" json:"router,omitempty" property:"router"`
 	// is refresh action
-	refresh bool
+	Refresh bool
 	// prefix              string
 	fatherConfig        interface{}
 	EventDispatcherType string `default:"direct" yaml:"event_dispatcher_type" json:"event_dispatcher_type,omitempty"`
@@ -150,6 +150,54 @@ func (rc *RootConfig) InitConfig(opts ...rootConfOption) error {
 		return err
 	}
 	return nil
+}
+
+//func (rc *RootConfig) RefreshConfig(opts ...rootConfOption) error {
+//	for _, opt := range opts {
+//		opt.apply(rc)
+//	}
+//	if err := initApplicationConfig(rc); err != nil {
+//		return err
+//	}
+//	if err := initConfigCenter(rc); err != nil {
+//		return err
+//	}
+//	if err := initProtocolsConfig(rc); err != nil {
+//		return err
+//	}
+//	if err := initRegistriesConfig(rc); err != nil {
+//		return err
+//	}
+//	if err := initLoggerConfig(rc); err != nil {
+//		return err
+//	}
+//	if err := initServiceDiscoveryConfig(rc); err != nil {
+//		return err
+//	}
+//	if err := initMetadataReportConfig(rc); err != nil {
+//		return err
+//	}
+//	if err := initMetricConfig(rc); err != nil {
+//		return err
+//	}
+//	if err := initNetworkConfig(rc); err != nil {
+//		return err
+//	}
+//	if err := initRouterConfig(rc); err != nil {
+//		return err
+//	}
+//	// provider、consumer must last init
+//	if err := RefreshProviderConfig(rc); err != nil {
+//		return err
+//	}
+//	if err := RefreshConsumerConfig(rc); err != nil {
+//		return err
+//	}
+//	return nil
+//}
+
+func overrideProvider() {
+
 }
 
 func WithApplication(ac *ApplicationConfig) RootConfFunc {

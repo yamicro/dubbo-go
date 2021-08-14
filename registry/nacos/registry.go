@@ -114,7 +114,7 @@ func createRegisterParam(url *common.URL, serviceName string) vo.RegisterInstanc
 }
 
 // Register will register the service @url to its nacos registry center
-func (nr *nacosRegistry) Register(url *common.URL) error {
+func (nr *nacosRegistry) Register(url *common.URL, refresh bool) error {
 	serviceName := getServiceName(url)
 	param := createRegisterParam(url, serviceName)
 	isRegistry, err := nr.namingClient.Client().RegisterInstance(param)

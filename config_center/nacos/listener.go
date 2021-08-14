@@ -19,6 +19,11 @@ package nacos
 
 import (
 	"context"
+	"dubbo.apache.org/dubbo-go/v3/config"
+	"dubbo.apache.org/dubbo-go/v3/remoting"
+	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/rawbytes"
 )
 
 import (
@@ -28,11 +33,11 @@ import (
 import (
 	"dubbo.apache.org/dubbo-go/v3/common/logger"
 	"dubbo.apache.org/dubbo-go/v3/config_center"
-	"dubbo.apache.org/dubbo-go/v3/remoting"
 )
 
 func callback(listener config_center.ConfigurationListener, _, _, dataId, data string) {
 	listener.Process(&config_center.ConfigChangeEvent{Key: dataId, Value: data, ConfigType: remoting.EventTypeUpdate})
+	//listener.
 }
 
 func (n *nacosDynamicConfiguration) addListener(key string, listener config_center.ConfigurationListener) {
@@ -42,7 +47,7 @@ func (n *nacosDynamicConfiguration) addListener(key string, listener config_cent
 			DataId: key,
 			Group:  "dubbo",
 			OnChange: func(namespace, group, dataId, data string) {
-				go callback(listener, namespace, group, dataId, data)
+				go n.Refresh(&config_center.ConfigChangeEvent{Key: dataId, Value: data, ConfigType: remoting.EventTypeUpdate})
 			},
 		})
 		if err != nil {
@@ -60,7 +65,52 @@ func (n *nacosDynamicConfiguration) addListener(key string, listener config_cent
 	logger.Infof("profile:%s. this profile is already listening", key)
 }
 
+func (n *nacosDynamicConfiguration) addConfigCenterListener(key string, group string, listener config_center.ConfigurationChanegeListener) {
+	_, loaded := n.keyListeners.Load(key)
+	if group == "" {
+		group = "dubbo"
+	}
+	if !loaded {
+		err := n.client.Client().ListenConfig(vo.ConfigParam{
+			DataId: key,
+			Group:  group,
+			OnChange: func(namespace, group, dataId, data string) {
+				go n.Refresh(&config_center.ConfigChangeEvent{Key: dataId, Value: data, ConfigType: remoting.EventTypeUpdate})
+			},
+		})
+		if err != nil {
+			logger.Errorf("nacos : listen config fail, error:%v ", err)
+			return
+		}
+		_, cancel := context.WithCancel(context.Background())
+		newListener := make(map[config_center.ConfigurationChanegeListener]context.CancelFunc)
+		newListener[listener] = cancel
+		n.keyListeners.Store(key, newListener)
+		return
+	}
+
+	// TODO check goroutine alive, but this version of go_nacos_sdk is not support.
+	logger.Infof("profile:%s. this profile is already listening", key)
+}
+
 func (n *nacosDynamicConfiguration) removeListener(key string, listener config_center.ConfigurationListener) {
 	// TODO: not supported in current go_nacos_sdk version
 	logger.Warn("not supported in current go_nacos_sdk version")
+}
+
+func (n *nacosDynamicConfiguration) Refresh(event *config_center.ConfigChangeEvent) error {
+	logger.Infof("Notification of overriding rule, change type is: %v , raw config content is:%v", event.ConfigType, event.Value)
+	tmprc := new(config.RootConfig)
+	koan := koanf.New(".")
+	if err := koan.Load(rawbytes.Provider([]byte(event.Value.(string))), yaml.Parser()); err != nil {
+		return err
+	}
+	if err := koan.UnmarshalWithConf(tmprc.Prefix(),
+		tmprc, koanf.UnmarshalConf{Tag: "yaml"}); err != nil {
+		return err
+	}
+	tmprc.Refresh = true
+	config.SetRootConfig(*tmprc)
+	err := tmprc.InitConfig()
+	return err
 }

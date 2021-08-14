@@ -79,6 +79,9 @@ func newNacosDynamicConfiguration(url *common.URL) (*nacosDynamicConfiguration, 
 func (n *nacosDynamicConfiguration) AddListener(key string, listener config_center.ConfigurationListener, opions ...config_center.Option) {
 	n.addListener(key, listener)
 }
+func (n *nacosDynamicConfiguration) AddConfigCenterListener(key string, group string, listener config_center.ConfigurationChanegeListener, opions ...config_center.Option) {
+	n.addConfigCenterListener(key, group, listener)
+}
 
 // RemoveListener Remove listener
 func (n *nacosDynamicConfiguration) RemoveListener(key string, listener config_center.ConfigurationListener, opions ...config_center.Option) {
@@ -135,13 +138,13 @@ func (n *nacosDynamicConfiguration) GetConfigKeysByGroup(group string) (*gxset.H
 }
 
 // GetRule Get router rule
-func (n *nacosDynamicConfiguration) GetRule(key string, opts ...config_center.Option) (string, error) {
+func (n *nacosDynamicConfiguration) GetRule(dataId string, opts ...config_center.Option) (string, error) {
 	tmpOpts := &config_center.Options{}
 	for _, opt := range opts {
 		opt(tmpOpts)
 	}
 	content, err := n.client.Client().GetConfig(vo.ConfigParam{
-		DataId: key,
+		DataId: dataId,
 		Group:  n.resolvedGroup(tmpOpts.Group),
 	})
 	if err != nil {
@@ -219,3 +222,50 @@ func (n *nacosDynamicConfiguration) closeConfigs() {
 	n.client.Close()
 	logger.Infof("begin to close provider n configClient")
 }
+
+//
+//func serviceItemToUrls(item ConfigItem, config ConfiguratorConfig) ([]*common.URL, error) {
+//	addresses := item.Addresses
+//	if len(addresses) == 0 {
+//		addresses = append(addresses, constant.ANYHOST_VALUE)
+//	}
+//	var urls []*common.URL
+//	for _, v := range addresses {
+//		urlStr := constant.OVERRIDE_PROTOCOL + "://" + v + "/"
+//		serviceStr, err := getServiceString(config.Key)
+//		if err != nil {
+//			return nil, perrors.WithStack(err)
+//		}
+//		urlStr = urlStr + serviceStr
+//		paramStr, err := getParamString(item)
+//		if err != nil {
+//			return nil, perrors.WithStack(err)
+//		}
+//		urlStr = urlStr + paramStr
+//		urlStr = urlStr + getEnabledString(item, config)
+//		urlStr = urlStr + "&category="
+//		urlStr = urlStr + constant.DYNAMIC_CONFIGURATORS_CATEGORY
+//		urlStr = urlStr + "&configVersion="
+//		urlStr = urlStr + config.ConfigVersion
+//		apps := item.Applications
+//		if len(apps) > 0 {
+//			for _, v := range apps {
+//				newUrlStr := urlStr
+//				newUrlStr = newUrlStr + "&application"
+//				newUrlStr = newUrlStr + v
+//				url, err := common.NewURL(newUrlStr)
+//				if err != nil {
+//					return nil, perrors.WithStack(err)
+//				}
+//				urls = append(urls, url)
+//			}
+//		} else {
+//			url, err := common.NewURL(urlStr)
+//			if err != nil {
+//				return nil, perrors.WithStack(err)
+//			}
+//			urls = append(urls, url)
+//		}
+//	}
+//	return urls, nil
+//}

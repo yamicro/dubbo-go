@@ -74,6 +74,24 @@ func initProviderConfig(rc *RootConfig) error {
 	return nil
 }
 
+func RefreshProviderConfig(rc *RootConfig) error {
+	provider := rc.Provider
+	if provider == nil {
+		provider = new(ProviderConfig)
+	}
+
+	if err := initServiceConfig(provider); err != nil {
+		return err
+	}
+	if err := defaults.Set(provider); err != nil {
+		return err
+	}
+	provider.Registry = translateRegistryIds(provider.Registry)
+	provider.Load()
+	rc.Provider = provider
+	return nil
+}
+
 func (c *ProviderConfig) Validate(r *RootConfig) {
 	ids := make([]string, 0)
 	for key := range r.Registries {
@@ -101,6 +119,33 @@ func (c *ProviderConfig) Prefix() string {
 }
 
 func (c *ProviderConfig) Load() {
+	// todo Write the current configuration to cache file.
+	//if c.CacheFile != "" {
+	//	if data, err := yaml.MarshalYML(providerConfig); err != nil {
+	//		logger.Errorf("Marshal provider config err: %s", err.Error())
+	//	} else {
+	//		if err := ioutil.WriteFile(provider  CacheFile, data, 0666); err != nil {
+	//			logger.Errorf("Write provider config cache file err: %s", err.Error())
+	//		}
+	//	}
+	//}
+	c.ready = atomic.NewBool(false)
+	for key, svs := range c.Services {
+		rpcService := GetProviderService(key)
+		if rpcService == nil {
+			logger.Warnf("%s does not exist!", key)
+			continue
+		}
+		svs.id = key
+		svs.Implement(rpcService)
+		if err := svs.Export(); err != nil {
+			panic(fmt.Sprintf("service %s export failed! err: %#v", key, err))
+		}
+	}
+	c.ready = atomic.NewBool(true)
+}
+
+func (c *ProviderConfig) ReLoad() {
 	// todo Write the current configuration to cache file.
 	//if c.CacheFile != "" {
 	//	if data, err := yaml.MarshalYML(providerConfig); err != nil {

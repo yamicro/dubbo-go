@@ -355,3 +355,6 @@ func adapterKey(key string) string {
 
 	return key
 }
+func (fdcf *FileSystemDynamicConfiguration) Refresh(content string) error {
+	return errors.New("...")
+}

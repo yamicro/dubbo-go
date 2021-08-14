@@ -19,13 +19,15 @@ package event
 
 import (
 	perrors "github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
+	"reflect"
 )
 
 import (
 	"dubbo.apache.org/dubbo-go/v3/common"
-	"dubbo.apache.org/dubbo-go/v3/common/config"
 	"dubbo.apache.org/dubbo-go/v3/common/constant"
 	"dubbo.apache.org/dubbo-go/v3/common/logger"
+	"dubbo.apache.org/dubbo-go/v3/config"
 	"dubbo.apache.org/dubbo-go/v3/config_center"
 	"dubbo.apache.org/dubbo-go/v3/remoting"
 )
@@ -72,6 +74,14 @@ func (bcl *BaseConfigurationListener) Process(event *config_center.ConfigChangeE
 	if event.ConfigType == remoting.EventTypeDel {
 		bcl.configurators = nil
 	} else {
+		//获取增量
+		rc := config.GetRootConfig()
+		var rctmp config.RootConfig
+		yaml.Unmarshal([]byte(event.Value.(string)), rctmp)
+		for i := 0; i < reflect.ValueOf(rc).NumField(); i++ {
+
+		}
+		rc.InitConfig()
 		if err := bcl.genConfiguratorFromRawRule(event.Value.(string)); err != nil {
 			logger.Error(perrors.WithStack(err))
 		}

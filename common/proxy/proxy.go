@@ -21,6 +21,7 @@ import (
 	"context"
 	"reflect"
 	"sync"
+	"time"
 )
 
 import (
@@ -201,6 +202,7 @@ func DefaultProxyImplementFunc(p *Proxy, v common.RPCService) {
 					inv.SetAttachments(k, value)
 				}
 			}
+			time.Sleep(10 * time.Second)
 
 			result := p.invoke.Invoke(invCtx, inv)
 			err = result.Error()

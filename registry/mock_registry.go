@@ -50,7 +50,7 @@ func NewMockRegistry(url *common.URL) (Registry, error) {
 }
 
 // Register is used as a mock registry
-func (*MockRegistry) Register(url *common.URL) error {
+func (*MockRegistry) Register(url *common.URL, refresh bool) error {
 	return nil
 }
 

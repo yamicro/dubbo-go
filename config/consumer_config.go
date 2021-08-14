@@ -63,6 +63,7 @@ func (ConsumerConfig) Prefix() string {
 }
 
 func initConsumerConfig(rc *RootConfig) error {
+	fmt.Println("start ConsumerConfig")
 	consumer := rc.Consumer
 	if consumer == nil {
 		consumer = new(ConsumerConfig)

@@ -18,6 +18,7 @@
 package config_center
 
 import (
+	"github.com/pkg/errors"
 	"sync"
 )
 
@@ -103,9 +104,19 @@ type MockDynamicConfiguration struct {
 	listener map[string]ConfigurationListener
 }
 
+func (n *MockDynamicConfiguration) Refresh(event *ConfigChangeEvent) error {
+	return errors.New("...")
+
+}
+
 // AddListener adds a listener for MockDynamicConfiguration
 func (c *MockDynamicConfiguration) AddListener(key string, listener ConfigurationListener, _ ...Option) {
 	c.listener[key] = listener
+}
+
+// AddListener adds a listener for MockDynamicConfiguration
+func (c *MockDynamicConfiguration) AddConfigCenterListener(key string, group string, listener ConfigurationChanegeListener, _ ...Option) {
+	//c.listener[key] = listener
 }
 
 // RemoveListener removes the listener for MockDynamicConfiguration

@@ -131,7 +131,7 @@ func (r *BaseRegistry) Destroy() {
 }
 
 // Register implement interface registry to register
-func (r *BaseRegistry) Register(conf *common.URL) error {
+func (r *BaseRegistry) Register(conf *common.URL, refresh bool) error {
 	var (
 		ok  bool
 		err error
@@ -150,7 +150,7 @@ func (r *BaseRegistry) Register(conf *common.URL) error {
 	r.cltLock.Lock()
 	_, ok = r.services[conf.Key()]
 	r.cltLock.Unlock()
-	if ok {
+	if ok && !refresh {
 		return perrors.Errorf("Path{%s} has been registered", conf.Key())
 	}
 

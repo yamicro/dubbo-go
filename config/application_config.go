@@ -19,6 +19,7 @@ package config
 
 import (
 	"dubbo.apache.org/dubbo-go/v3/common/constant"
+	"fmt"
 	"github.com/creasty/defaults"
 )
 
@@ -34,6 +35,8 @@ type ApplicationConfig struct {
 	MetadataType string `default:"local" yaml:"metadataType" json:"metadataType,omitempty" property:"metadataType"`
 }
 
+type ApplicationConfigOpt func(config *ApplicationConfig) *ApplicationConfig
+
 // Prefix dubbo.applicationConfig
 func (ApplicationConfig) Prefix() string {
 	return constant.DUBBO + ".application"
@@ -41,7 +44,7 @@ func (ApplicationConfig) Prefix() string {
 
 func initApplicationConfig(rc *RootConfig) error {
 	// ignore refresh action
-	if rc.refresh {
+	if rc.Refresh {
 		return nil
 	}
 	application := rc.Application
@@ -53,10 +56,20 @@ func initApplicationConfig(rc *RootConfig) error {
 		return err
 	}
 	rc.Application = application
+	fmt.Println("Application")
+
 	return nil
 }
 
 func (ac *ApplicationConfig) check() error {
 	defaults.MustSet(ac)
 	return verify(ac)
+}
+
+func NewApplicationConfig(opts ...ApplicationConfigOpt) *ApplicationConfig {
+	newConfig := new(ApplicationConfig)
+	for _, v := range opts {
+		v(newConfig)
+	}
+	return newConfig
 }

@@ -45,6 +45,7 @@ type DynamicConfiguration interface {
 	Parser() parser.ConfigurationParser
 	SetParser(parser.ConfigurationParser)
 	AddListener(string, ConfigurationListener, ...Option)
+	AddConfigCenterListener(string, string, ConfigurationChanegeListener, ...Option)
 	RemoveListener(string, ConfigurationListener, ...Option)
 	// GetProperties get properties file
 	GetProperties(string, ...Option) (string, error)
@@ -63,6 +64,8 @@ type DynamicConfiguration interface {
 
 	// GetConfigKeysByGroup will return all keys with the group
 	GetConfigKeysByGroup(group string) (*gxset.HashSet, error)
+
+	Refresh(*ConfigChangeEvent) error
 }
 
 // Options ...

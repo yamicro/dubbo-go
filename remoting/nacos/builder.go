@@ -119,9 +119,11 @@ func NewNacosClientByUrl(url *common.URL) (*nacosClient.NacosNamingClient, error
 
 // getNacosClientName get nacos client name
 func getNacosClientName() string {
-	name := config.GetApplicationConfig().Name
-	if len(name) > 0 {
-		return name
+	if applicatino := config.GetApplicationConfig(); applicatino != nil {
+		name := config.GetApplicationConfig().Name
+		if len(name) > 0 {
+			return name
+		}
 	}
 	return "nacos-client"
 }

@@ -29,6 +29,14 @@ import (
 type ConfigurationListener interface {
 	// Process the notification event once there's any change happens on the config
 	Process(*ConfigChangeEvent)
+
+	// Refresh in new config configurate
+	//Refresh(envet *ConfigChangeEvent) error
+}
+
+type ConfigurationChanegeListener interface {
+	// Refresh in new config configurate
+	Refresh(*ConfigChangeEvent) error
 }
 
 // ConfigChangeEvent for changing listener's event

@@ -19,6 +19,7 @@ package extension
 
 import (
 	"dubbo.apache.org/dubbo-go/v3/config_center"
+	"fmt"
 )
 
 var configCenterFactories = make(map[string]func() config_center.DynamicConfigurationFactory)
@@ -26,10 +27,12 @@ var configCenterFactories = make(map[string]func() config_center.DynamicConfigur
 // SetConfigCenterFactory sets the DynamicConfigurationFactory with @name
 func SetConfigCenterFactory(name string, v func() config_center.DynamicConfigurationFactory) {
 	configCenterFactories[name] = v
+	fmt.Println(configCenterFactories)
 }
 
 // GetConfigCenterFactory finds the DynamicConfigurationFactory with @name
 func GetConfigCenterFactory(name string) config_center.DynamicConfigurationFactory {
+	//fmt.Println(configCenterFactories)
 	if configCenterFactories[name] == nil {
 		panic("config center for " + name + " is not existing, make sure you have import the package.")
 	}

@@ -173,7 +173,7 @@ func (s *serviceDiscoveryRegistry) Destroy() {
 	}
 }
 
-func (s *serviceDiscoveryRegistry) Register(url *common.URL) error {
+func (s *serviceDiscoveryRegistry) Register(url *common.URL, refresh bool) error {
 	if !shouldRegister(url) {
 		return nil
 	}

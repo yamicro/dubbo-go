@@ -59,7 +59,7 @@ func Load(opts ...LoaderConfOption) error {
 		rootConfig, koanf.UnmarshalConf{Tag: "yaml"}); err != nil {
 		return err
 	}
-	rootConfig.refresh = false
+	rootConfig.Refresh = false
 	return rootConfig.InitConfig()
 }
 

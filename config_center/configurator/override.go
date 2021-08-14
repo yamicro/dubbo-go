@@ -48,6 +48,7 @@ func (c *overrideConfigurator) GetUrl() *common.URL {
 	return c.configuratorUrl
 }
 
+//将新配置写成url?
 func (c *overrideConfigurator) Configure(url *common.URL) {
 	// remove configuratorUrl some param that can not be configured
 	if c.configuratorUrl.GetParam(constant.ENABLED_KEY, "true") == "false" || len(c.configuratorUrl.Location) == 0 {

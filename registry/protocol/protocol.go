@@ -119,7 +119,7 @@ func (proto *registryProtocol) initConfigurationListeners() {
 	proto.providerConfigurationListener = newProviderConfigurationListener(proto.overrideListeners)
 }
 
-// nolint
+// GetRegistries nolint
 func (proto *registryProtocol) GetRegistries() []registry.Registry {
 	var rs []registry.Registry
 	proto.registries.Range(func(_, v interface{}) bool {
@@ -155,7 +155,7 @@ func (proto *registryProtocol) Refer(url *common.URL) protocol.Invoker {
 		return nil
 	}
 
-	err = reg.Register(serviceUrl)
+	err = reg.Register(serviceUrl, false)
 	if err != nil {
 		logger.Errorf("consumer service %v register registry %v error, error message is %s",
 			serviceUrl.String(), registryUrl.String(), err.Error())
@@ -195,7 +195,7 @@ func (proto *registryProtocol) Export(invoker protocol.Invoker) protocol.Exporte
 	}
 
 	registeredProviderUrl := getUrlToRegistry(providerUrl, registryUrl)
-	err := reg.Register(registeredProviderUrl)
+	err := reg.Register(registeredProviderUrl, config.GetRootConfig().Refresh)
 	if err != nil {
 		logger.Errorf("provider service %v register registry %v error, error message is %s",
 			providerUrl.Key(), registryUrl.Key(), err.Error())
@@ -222,7 +222,7 @@ func (proto *registryProtocol) Export(invoker protocol.Invoker) protocol.Exporte
 	return cachedExporter.(protocol.Exporter)
 }
 
-func (proto *registryProtocol) reExport(invoker protocol.Invoker, newUrl *common.URL) {
+func (proto *registryProtocol) ReExport(invoker protocol.Invoker, newUrl *common.URL) {
 	key := getCacheKey(invoker)
 	if oldExporter, loaded := proto.bounds.Load(key); loaded {
 		wrappedNewInvoker := newWrappedInvoker(invoker, newUrl)
@@ -257,7 +257,8 @@ func registerServiceMap(invoker protocol.Invoker) error {
 	_, err := common.ServiceMap.Register(serviceConfig.Interface,
 		// FIXME
 		serviceConfig.Protocol[0], serviceConfig.Group,
-		serviceConfig.Version, rpcService)
+		serviceConfig.Version, rpcService,
+		false)
 	if err != nil {
 		s := "reExport can not re register ServiceMap. Error message is " + err.Error()
 		return perrors.New(s)
@@ -303,7 +304,8 @@ func (nl *overrideSubscribeListener) doOverrideIfNecessary() {
 		if nl.configurator != nil {
 			nl.configurator.Configure(providerUrl)
 		}
-		// provider application level  management in 2.7.x
+		// provider application level  management in 2.7.x,override providerurl by the
+		// config from config center
 		for _, v := range nl.protocol.providerConfigurationListener.Configurators() {
 			v.Configure(providerUrl)
 		}
@@ -314,11 +316,11 @@ func (nl *overrideSubscribeListener) doOverrideIfNecessary() {
 				v.Configure(providerUrl)
 			}
 		}
-
+		//全量比较
 		if currentUrl.String() != providerUrl.String() {
 			newRegUrl := nl.originInvoker.GetURL().Clone()
 			setProviderUrl(newRegUrl, providerUrl)
-			nl.protocol.reExport(nl.originInvoker, newRegUrl)
+			nl.protocol.ReExport(nl.originInvoker, newRegUrl)
 		}
 	}
 }

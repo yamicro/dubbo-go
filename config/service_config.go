@@ -244,7 +244,7 @@ func (svc *ServiceConfig) Export() error {
 	proxyFactory := extension.GetProxyFactory(svc.rootConfig.Provider.ProxyFactory)
 	for _, proto := range protocolConfigs {
 		// registry the service reflect
-		methods, err := common.ServiceMap.Register(svc.Interface, proto.Name, svc.Group, svc.Version, svc.rpcService)
+		methods, err := common.ServiceMap.Register(svc.Interface, proto.Name, svc.Group, svc.Version, svc.rpcService, rootConfig.Refresh)
 		if err != nil {
 			formatErr := perrors.Errorf("The service %v export the protocol %v error! Error message is %v.",
 				svc.Interface, proto.Name, err.Error())

@@ -19,6 +19,7 @@ package kubernetes
 
 import (
 	"strings"
+	"time"
 )
 
 import (
@@ -113,6 +114,7 @@ func (l *configurationListener) Next() (*registry.ServiceEvent, error) {
 				}
 				continue
 			}
+			time.Sleep(3 * time.Second)
 			return &registry.ServiceEvent{Action: e.ConfigType, Service: e.Value.(*common.URL)}, nil
 		}
 	}

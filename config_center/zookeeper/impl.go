@@ -18,6 +18,7 @@
 package zookeeper
 
 import (
+	"errors"
 	"strings"
 	"sync"
 )
@@ -82,6 +83,10 @@ func newZookeeperDynamicConfiguration(url *common.URL) (*zookeeperDynamicConfigu
 
 func (c *zookeeperDynamicConfiguration) AddListener(key string, listener config_center.ConfigurationListener, opions ...config_center.Option) {
 	c.cacheListener.AddListener(key, listener)
+}
+
+func (n *zookeeperDynamicConfiguration) AddConfigCenterListener(key string, group string, listener config_center.ConfigurationChanegeListener, opions ...config_center.Option) {
+	//n.addConfigCenterListener(key, listener)
 }
 
 func (c *zookeeperDynamicConfiguration) RemoveListener(key string, listener config_center.ConfigurationListener, opions ...config_center.Option) {
@@ -228,4 +233,9 @@ func (c *zookeeperDynamicConfiguration) buildPath(group string) string {
 		group = config_center.DEFAULT_GROUP
 	}
 	return c.rootPath + pathSeparator + group
+}
+
+func (n *zookeeperDynamicConfiguration) Refresh(event *config_center.ConfigChangeEvent) error {
+	return errors.New("...")
+
 }
